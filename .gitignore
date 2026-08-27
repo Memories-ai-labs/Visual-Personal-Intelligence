@@ -12,3 +12,4 @@ node_modules/
 ui/dist/
 .DS_Store
 eval/results/*.jsonl
+ui/tsconfig.tsbuildinfo
