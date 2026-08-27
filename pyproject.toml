@@ -1,0 +1,55 @@
+[project]
+name = "vpi"
+version = "0.1.0"
+description = "Chat with your own video memory — a grounded ReAct agent on the Memories.ai video datalake"
+readme = "README.md"
+requires-python = ">=3.12"
+license = { text = "MIT" }
+dependencies = [
+    "httpx>=0.27.0",
+    "pydantic>=2.7.0",
+    "pydantic-settings>=2.3.0",
+    "python-dotenv>=1.0.0",
+    "anthropic>=0.40.0",
+    "openai>=1.40.0",
+    "fastapi>=0.115.0",
+    "uvicorn[standard]>=0.32.0",
+    "typer>=0.12.0",
+    "rich>=13.7.0",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8.0.0", "pytest-asyncio>=0.23.0", "ruff>=0.6.0"]
+
+[project.scripts]
+vpi = "vpi.cli:app"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/vpi"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "N", "W", "UP", "B"]
+# N818: our exception names mirror the API's own error codes (NotFound,
+# RateLimited, VideoNotReady) — reading like the wire protocol is worth more
+# here than a uniform "Error" suffix.
+ignore = ["N818"]
+
+[tool.ruff.lint.per-file-ignores]
+# typer's whole idiom is calls in argument defaults.
+"src/vpi/cli.py" = ["B008"]
+# Long assertion lines in tests read better than wrapped ones.
+"tests/*" = ["E501"]
+# demo.py is fixture data — transcript and caption text, quoted as recorded.
+"src/vpi/demo.py" = ["E501"]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]

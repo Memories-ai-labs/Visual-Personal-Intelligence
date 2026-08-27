@@ -1,0 +1,45 @@
+from vpi.datalake.client import DataLakeClient
+from vpi.datalake.errors import (
+    AuthError,
+    DataLakeError,
+    EndpointDeprecated,
+    InvalidArgument,
+    NotFound,
+    PermissionDenied,
+    RateLimited,
+    ServerError,
+    VideoNotReady,
+)
+from vpi.datalake.models import (
+    Collection,
+    Frame,
+    Moment,
+    Operation,
+    SearchHit,
+    SearchPage,
+    Segment,
+    Speaker,
+    Video,
+)
+
+__all__ = [
+    "AuthError",
+    "Collection",
+    "DataLakeClient",
+    "DataLakeError",
+    "EndpointDeprecated",
+    "Frame",
+    "InvalidArgument",
+    "Moment",
+    "NotFound",
+    "Operation",
+    "PermissionDenied",
+    "RateLimited",
+    "SearchHit",
+    "SearchPage",
+    "Segment",
+    "ServerError",
+    "Speaker",
+    "Video",
+    "VideoNotReady",
+]

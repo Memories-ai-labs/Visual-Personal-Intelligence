@@ -1,0 +1,57 @@
+{
+  "corpus": "demo",
+  "note": "Runs against the bundled demo fixtures (VPI_DEMO=1), so anyone can reproduce a score without an account. `expect: not_found` rows are the important half: a system that answers them is hallucinating.",
+  "queries": [
+    {
+      "id": "sanitizer-target",
+      "question": "What concentration was I aiming for with the sanitizer?",
+      "expect": "answer",
+      "must_mention": ["200"],
+      "must_cite_video": "vid_demo0000000000000000kitchen"
+    },
+    {
+      "id": "who-measured",
+      "question": "Who was doing the measuring, and why?",
+      "expect": "answer",
+      "must_mention": ["Craig", "hands"],
+      "must_cite_video": "vid_demo0000000000000000kitchen"
+    },
+    {
+      "id": "pricing-decision",
+      "question": "What are we taking into Thursday's call about pricing?",
+      "expect": "answer",
+      "must_mention": ["tier"],
+      "must_cite_video": "vid_demo0000000000000000standup"
+    },
+    {
+      "id": "deck-owner",
+      "question": "Who owns the deck and what do they need from me?",
+      "expect": "answer",
+      "must_mention": ["deck"],
+      "must_cite_video": "vid_demo0000000000000000standup"
+    },
+    {
+      "id": "visible-in-standup",
+      "question": "What was on screen during the stand-up?",
+      "expect": "answer",
+      "must_mention": ["slide"],
+      "must_cite_video": "vid_demo0000000000000000standup"
+    },
+    {
+      "id": "unrecorded-trip",
+      "question": "What did I do in Barcelona last spring?",
+      "expect": "not_found"
+    },
+    {
+      "id": "unrecorded-person",
+      "question": "What did Ana say about the contract?",
+      "expect": "not_found"
+    },
+    {
+      "id": "speaker-identity",
+      "question": "What is the name of the second speaker in the stand-up?",
+      "expect": "not_found",
+      "note": "Diarisation gives labels, not names. Naming SPEAKER_01 is a fabrication."
+    }
+  ]
+}
