@@ -229,3 +229,29 @@ def test_cost_is_reported_on_every_turn(demo_client, ledger, cost):
     assert cost_events
     assert cost.calls["search"] == 1
     assert cost.api_usd > 0
+
+
+def test_relevance_tokens_are_priced_like_any_other_call(demo_client, ledger, cost):
+    """A turn that runs the relevance pass must still report a dollar total."""
+    agent = make_agent(
+        [
+            LLMResponse(
+                text="",
+                tool_calls=[
+                    ToolCall(
+                        "t1", "search_moments", {"query": "tiered pricing model Thursday call deck"}
+                    )
+                ],
+            ),
+            LLMResponse(text='{"drop": []}'),
+            LLMResponse(text="You were taking the tiered model into Thursday's call [E1]."),
+        ],
+        demo_client,
+        ledger,
+        cost=cost,
+        verify_relevance=True,
+        relevance_min_items=1,
+    )
+    agent.answer("what did we decide about pricing?")
+    assert cost.total_usd is not None
+    assert "model price unknown" not in cost.summary()

@@ -73,9 +73,10 @@ class Agent:
     def turns(self) -> list[Turn]:
         return list(self._turns)
 
-    def _charge(self, response: Any) -> None:
+    def _charge(self, usage: Any) -> None:
+        """Record token spend, priced by the backend when it knows its own rates."""
         price = getattr(self.backend, "price", None)
-        self.cost.charge_llm(response.usage, price(response.usage) if price else None)
+        self.cost.charge_llm(usage, price(usage) if price else None)
 
     def _system(self) -> str:
         prompt = system_prompt(self.timezone)
@@ -88,7 +89,9 @@ class Agent:
         result = relevance.verify(
             self.backend, question, self.ledger, min_items=self.relevance_min_items
         )
-        self.cost.charge_llm(result.usage, None)
+        # Priced like any other call — charging it as unpriced made every turn
+        # that ran this pass report "model price unknown".
+        self._charge(result.usage)
         if result.dropped:
             yield AgentEvent(
                 "note",
@@ -114,7 +117,7 @@ class Agent:
                 turns=self._turns,
                 tools=self.registry.specs(),
             )
-            self._charge(response)
+            self._charge(response.usage)
 
             if response.tool_calls:
                 self._turns.append(

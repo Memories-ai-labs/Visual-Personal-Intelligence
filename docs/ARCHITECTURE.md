@@ -79,7 +79,9 @@ Retrieval here is metered per call, so an agent that searches five times because
 it stacked keywords costs five times as much as one that searched once well. The
 cost ledger makes that visible per turn rather than at the end of the month:
 search $0.008 (×3 with `rerank`), `get_moment` $0.008 (+$0.005 with a clip),
-derived reads $0.001, indexing $0.04/minute.
+derived reads $0.001, indexing $0.05/minute. The
+[published table](https://docs.memories.ai/datalake/pricing) is the authority;
+these constants live in `datalake/client.py`.
 
 LLM tokens are priced from a small table of known models. An unknown model
 reports tokens with no dollar figure — a wrong number would be worse.

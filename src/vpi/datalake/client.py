@@ -32,13 +32,14 @@ from vpi.datalake.models import (
     Video,
 )
 
-# Per-call prices, from the published pricing table. Used for the cost ledger the
-# agent shows after each turn — not for billing.
+# Per-call prices from the published table at https://docs.memories.ai/datalake/pricing
+# — used for the cost ledger the agent shows after each turn, not for billing.
+# Check them against that page if a number here looks stale.
 PRICE_SEARCH = 0.008
 PRICE_MOMENT = 0.008
 PRICE_MOMENT_CLIP = 0.005
 PRICE_DERIVED_READ = 0.001
-PRICE_INDEX_PER_MINUTE = 0.04
+PRICE_INDEX_PER_MINUTE = 0.05
 RERANK_MULTIPLIER = 3.0
 
 RETRY_STATUSES = {409, 429, 500, 502, 503, 504}

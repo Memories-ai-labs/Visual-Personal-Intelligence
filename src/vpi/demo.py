@@ -130,13 +130,35 @@ _SEARCH_INDEX = [
 _BASELINE_SCORE = 0.2
 
 
-def _score(query: str, text: str) -> float:
-    """Crude word overlap. Enough to make the demo respond to the question asked."""
-    words = {w.strip(".,!?").lower() for w in query.split() if len(w) > 3}
-    if not words:
+def _stem(word: str) -> str:
+    """Crude suffix stripping, so 'pricing' matches 'price' and 'tiers' matches 'tier'."""
+    word = word.strip(".,!?;:'\"").lower()
+    for suffix in ("ing", "ed", "es", "s"):
+        if len(word) > 4 and word.endswith(suffix):
+            return word[: -len(suffix)]
+    return word
+
+
+def _terms(text: str) -> set[str]:
+    return {_stem(w) for w in text.split() if len(w) > 3}
+
+
+def _score(query: str, text: str, context: str = "") -> float:
+    """Word overlap against the moment plus its video's summary and title.
+
+    Real embeddings carry video-level context, which is why "what did we decide
+    about pricing" finds a moment whose own words are "the tiered model". Folding
+    the summary into the comparison approximates that, and keeps the demo from
+    looking broken on the first natural question someone asks.
+    """
+    wanted = _terms(query)
+    if not wanted:
         return 0.1
-    hit = {w.strip(".,!?").lower() for w in text.split()}
-    return round(0.2 + 0.6 * len(words & hit) / len(words), 4)
+    own = _terms(text)
+    around = _terms(context)
+    direct = len(wanted & own) / len(wanted)
+    indirect = len(wanted & around) / len(wanted)
+    return round(min(0.95, 0.2 + 0.6 * direct + 0.25 * indirect), 4)
 
 
 def _json(payload: Any, status: int = 200) -> httpx.Response:
@@ -190,7 +212,7 @@ def handler(request: httpx.Request) -> httpx.Response:  # noqa: C901 - a router 
                 "ref": f"{vid}@{start:.1f}-{end:.1f}",
                 "video_id": vid,
                 "target": target,
-                "score": _score(query, text),
+                "score": _score(query, text, f"{VIDEOS[vid]['title']} {VIDEOS[vid]['summary']}"),
                 "start": start,
                 "end": end,
                 "snippet": text,

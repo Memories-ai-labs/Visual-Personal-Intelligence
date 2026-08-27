@@ -28,26 +28,31 @@ found — which is a useful answer, and an honest one.
 ## What a question looks like
 
 ```
-you › what was I saying about the sanitizer mix last week?
+you › what did we decide about pricing, and who owns the follow-up?
 
-  → resolve_timeframe(phrase=last week)
-  ← 'last week' in Asia/Shanghai is 2026-08-17T16:00:00+00:00 to 2026-08-24T16:00:00+00:00
-  → search_moments(query=mixing sanitizer, targets=['transcription'], filter={...})
-  ← 4 moments (request req_x; scores are only comparable inside this one request) (+4 evidence)
-  → get_moment(ref=vid_5cm3…@601.0-606.5, expand=['transcription', 'caption', 'clip'])
-  ← vid_5cm3…@601.0-606.5 expanded into 5 evidence entries (+5 evidence)
-  · dropped 2 irrelevant entries: about dishwashing, not the sanitizer mix
+  → resolve_timeframe(phrase=this week)
+  ← 'this week' in Asia/Shanghai is 2026-08-23T16:00:00+00:00 to 2026-08-30T16:00:00+00:00 (UTC).
+  → search_moments(query=pricing decision and who owns the follow-up, targets=['transcription', 'caption'])
+  ← 3 moments (request req_demo_search; scores are only comparable inside this one request)  (+3 evidence)
+  → get_moment(ref=vid_demo…standup@42.0-55.0, expand=['transcription', 'caption', 'clip'])
+  ← vid_demo…standup@42.0-55.0 expanded into 3 evidence entries  (+3 evidence)
+  · dropped 1 irrelevant entry: a slide description, not the decision
 
-You were mixing to a 200 ppm target and had Craig measuring because his hands
-were clean [E7][E8]. The bucket was being sprayed down in the sink just before
-that [E4].
+The tiered model is what is going into Thursday's call [E2]. You own the deck,
+and you need the usage numbers by Wednesday morning [E3].
 
-  [E7] vid_5cm3… 601.0-606.5s — Craig here who's helping me, his hands are clean…
-  [E8] vid_5cm3… 606.5-612.0s — we're going for two hundred parts per million…
-  [E4] vid_5cm3… 577.0-602.0s — A white bucket sits in a stainless steel sink…
+  [E2] vid_demo…standup 42.0-48.5s — the tiered model is what we're taking into the call on Thursday
+  [E3] vid_demo…standup 48.5-55.0s — I'll own the deck, but I need the usage numbers by Wednesday
 
-  $0.0323 total — $0.0240 datalake (2×search, 1×get_moment), 8,412 in / 640 out tokens
+  $0.0210 total — $0.0210 datalake (1×get_moment, 1×search), 0 in / 0 out tokens
 ```
+
+That is a real run against the bundled demo corpus, so you can reproduce it with
+no key and no account. Two honest notes about it: the model was scripted for the
+capture (everything else — tools, ledger, pruning, gate, costs — is the real
+code path), so the token counts read zero, and a real model will word the answer
+differently. What will not differ is the shape: an answer that cites, or an
+answer that says it could not find anything.
 
 ## Try it with no key and no account
 
@@ -112,9 +117,11 @@ truth, and a non-null `error` means failure — including partial failure.
 ## Cost
 
 Every turn prints what it spent. Datalake prices are per call: search $0.008
-(×3 with `rerank`), `get_moment` $0.008, derived reads $0.001, indexing $0.04
-per minute of video. LLM tokens are priced per model; an unrecognised model
-reports tokens and no dollar figure rather than a wrong one.
+(×3 with `rerank`), `get_moment` $0.008, derived reads $0.001, indexing $0.05
+per minute of video — the [published table](https://docs.memories.ai/datalake/pricing)
+is the authority, and `src/vpi/datalake/client.py` is where these live if they
+drift. LLM tokens are priced per model; an unrecognised model reports tokens and
+no dollar figure rather than a wrong one.
 
 ## Privacy
 
