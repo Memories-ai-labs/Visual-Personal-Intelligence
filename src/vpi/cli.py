@@ -11,7 +11,13 @@ from rich.table import Table
 from vpi import ingest as ingest_mod
 from vpi.chat import run_chat
 from vpi.config import get_settings
-from vpi.session import MissingCollection, build_client, build_session, resolve_collection
+from vpi.llm import MissingLLMCredentials
+from vpi.session import (
+    MissingCollection,
+    build_client,
+    build_session,
+    resolve_collection,
+)
 
 app = typer.Typer(
     add_completion=False,
@@ -134,7 +140,7 @@ def ask(
 
     try:
         session = build_session(collection_id=collection or None)
-    except MissingCollection as exc:
+    except (MissingCollection, MissingLLMCredentials) as exc:
         _fail(str(exc))
         return
     try:

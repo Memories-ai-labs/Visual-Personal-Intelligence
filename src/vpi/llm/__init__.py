@@ -2,6 +2,9 @@
 
 from __future__ import annotations
 
+import os
+from pathlib import Path
+
 from vpi.config import Settings, get_settings
 from vpi.llm.base import (
     LLMBackend,
@@ -12,6 +15,24 @@ from vpi.llm.base import (
     Turn,
     Usage,
 )
+
+
+class MissingLLMCredentials(RuntimeError):
+    """No way to reach a model. Said plainly, because it is most people's first error."""
+
+
+# The SDK also resolves an `ant auth login` profile from disk, so a missing env
+# var is not on its own proof that there are no credentials.
+_ANTHROPIC_ENV = ("ANTHROPIC_API_KEY", "ANTHROPIC_AUTH_TOKEN")
+_ANTHROPIC_PROFILE_DIR = Path.home() / ".config" / "anthropic"
+
+
+def _has_anthropic_credentials(settings: Settings) -> bool:
+    if settings.anthropic_api_key:
+        return True
+    if any(os.environ.get(name) for name in _ANTHROPIC_ENV):
+        return True
+    return _ANTHROPIC_PROFILE_DIR.exists()
 
 
 def build_backend(settings: Settings | None = None) -> LLMBackend:
@@ -26,6 +47,15 @@ def build_backend(settings: Settings | None = None) -> LLMBackend:
             api_key=settings.llm_api_key,
         )
 
+    if not _has_anthropic_credentials(settings):
+        raise MissingLLMCredentials(
+            "No model credentials found. Either:\n"
+            "  · set ANTHROPIC_API_KEY (from console.anthropic.com) in .env, or\n"
+            "  · point VPI_LLM_BASE_URL at any OpenAI-compatible endpoint "
+            "(OpenRouter, vLLM, LM Studio) and set VPI_LLM_API_KEY.\n"
+            "The datalake key is separate — it reads your videos, not the model."
+        )
+
     from vpi.llm.anthropic_backend import AnthropicBackend
 
     return AnthropicBackend(
@@ -37,6 +67,7 @@ def build_backend(settings: Settings | None = None) -> LLMBackend:
 
 __all__ = [
     "LLMBackend",
+    "MissingLLMCredentials",
     "LLMResponse",
     "ToolCall",
     "ToolResult",

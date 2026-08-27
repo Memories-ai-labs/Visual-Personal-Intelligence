@@ -106,3 +106,34 @@ def test_session_can_be_reset(client: TestClient):
 
 def test_media_endpoint_rejects_an_unusable_kind(client: TestClient):
     assert client.get("/api/media", params={"ref": "vid_a", "kind": "nonsense"}).status_code == 400
+
+
+def test_missing_model_credentials_is_a_readable_error(monkeypatch, tmp_path):
+    """The most common first error should explain itself, not traceback."""
+    import pytest
+
+    from vpi import llm
+    from vpi.config import Settings
+
+    monkeypatch.delenv("ANTHROPIC_API_KEY", raising=False)
+    monkeypatch.delenv("ANTHROPIC_AUTH_TOKEN", raising=False)
+    monkeypatch.setattr(llm, "_ANTHROPIC_PROFILE_DIR", tmp_path / "nope")
+
+    with pytest.raises(llm.MissingLLMCredentials, match="OpenAI-compatible"):
+        llm.build_backend(Settings(MEMORIES_API_KEY="sk-mai-test"))
+
+
+def test_openai_compatible_endpoint_needs_no_anthropic_key(monkeypatch, tmp_path):
+    from vpi import llm
+    from vpi.config import Settings
+
+    monkeypatch.delenv("ANTHROPIC_API_KEY", raising=False)
+    monkeypatch.setattr(llm, "_ANTHROPIC_PROFILE_DIR", tmp_path / "nope")
+    backend = llm.build_backend(
+        Settings(
+            MEMORIES_API_KEY="sk-mai-test",
+            VPI_LLM_BASE_URL="http://localhost:1234/v1",
+            VPI_LLM_MODEL="local-model",
+        )
+    )
+    assert backend.model == "local-model"
